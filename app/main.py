@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from app.config import settings
-from app.routers import upload, analysis, chat, results
+from app.routers import upload, analysis, chat, results, test
 
 
 @asynccontextmanager
@@ -53,6 +53,7 @@ app.include_router(upload.router)
 app.include_router(analysis.router)
 app.include_router(chat.router)
 app.include_router(results.router)
+app.include_router(test.router)
 
 
 @app.get("/")

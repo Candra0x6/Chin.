@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HospiTwin Lite - Developer Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .method {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .method.post { background: #28a745; color: white; }
+        .method.get { background: #007bff; color: white; }
+        .method.delete { background: #dc3545; color: white; }
+
+        .endpoint-path {
+            font-family: monospace;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+        }
+
+        .test-runner {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .test-output {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            min-height: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: white;
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .stat-card p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-badge.success { background: #d4edda; color: #155724; }
+        .status-badge.error { background: #f8d7da; color: #721c24; }
+        .status-badge.pending { background: #fff3cd; color: #856404; }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .tech-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .tech-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        .tech-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 HospiTwin Lite</h1>
+            <p>Developer Documentation & Integration Testing</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="switchTab('overview')">📖 Overview</button>
+            <button class="tab-button" onclick="switchTab('architecture')">🏗️ Architecture</button>
+            <button class="tab-button" onclick="switchTab('api')">🔌 API Reference</button>
+            <button class="tab-button" onclick="switchTab('integration')">🧪 Integration Tests</button>
+            <button class="tab-button" onclick="switchTab('quickstart')">🚀 Quick Start</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <h2>📖 Project Overview</h2>
+            
+            <p>HospiTwin Lite is a video-based Emergency Room Flow Analyzer that uses AI to detect patient flow bottlenecks and recommend operational improvements.</p>
+
+            <div class="alert alert-info">
+                <strong>🎯 Core Functionality:</strong> Upload ER queue videos → AI analyzes crowd density → Get actionable insights and recommendations
+            </div>
+
+            <h3>Key Features</h3>
+            <div class="tech-stack">
+                <div class="tech-card">
+                    <h4>🎥 Video Analysis</h4>
+                    <p>Upload videos of ER waiting areas and get automated crowd detection using YOLOv8 and OpenCV.</p>
+                </div>
+                <div class="tech-card">
+                    <h4>📊 Crowd Analytics</h4>
+                    <p>Calculate crowd density, identify bottlenecks, and track congestion patterns over time.</p>
+                </div>
+                <div class="tech-card">
+                    <h4>🧠 AI Insights</h4>
+                    <p>Get natural language recommendations from Gemini AI based on detected patterns.</p>
+                </div>
+                <div class="tech-card">
+                    <h4>💬 Chat Assistant</h4>
+                    <p>Ask "what-if" questions and get context-aware answers about your analysis results.</p>
+                </div>
+            </div>
+
+            <h3>Technology Stack</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Layer</th>
+                        <th>Technology</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Backend</td>
+                        <td>FastAPI + Python 3.12</td>
+                        <td>Async API server with automatic docs</td>
+                    </tr>
+                    <tr>
+                        <td>Database</td>
+                        <td>PostgreSQL (Supabase)</td>
+                        <td>Store analysis results and metadata</td>
+                    </tr>
+                    <tr>
+                        <td>Computer Vision</td>
+                        <td>YOLOv8 + OpenCV</td>
+                        <td>Person detection and tracking</td>
+                    </tr>
+                    <tr>
+                        <td>AI Assistant</td>
+                        <td>Google Gemini</td>
+                        <td>Natural language insights and Q&A</td>
+                    </tr>
+                    <tr>
+                        <td>Frontend</td>
+                        <td>Next.js + Tailwind CSS</td>
+                        <td>Modern React-based web interface</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Architecture Tab -->
+        <div id="architecture" class="tab-content">
+            <h2>🏗️ System Architecture</h2>
+
+            <h3>High-Level Flow</h3>
+            <pre><code>┌─────────────────┐
+│   Frontend UI   │
+│  (Next.js)      │
+└────────┬────────┘
+         │ Video Upload
+         ▼
+┌─────────────────┐
+│  FastAPI Server │
+│  - Upload API   │
+│  - Analysis API │
+│  - Results API  │
+│  - Chat API     │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    ▼         ▼
+┌────────┐  ┌──────────┐
+│ YOLOv8 │  │PostgreSQL│
+│ OpenCV │  │ Database │
+└────────┘  └──────────┘
+    │            │
+    └─────┬──────┘
+          ▼
+    ┌─────────────┐
+    │ Gemini AI   │
+    │ (Insights)  │
+    └─────────────┘</code></pre>
+
+            <h3>Database Schema</h3>
+            <pre><code>analysis_results
+├── id (UUID, Primary Key)
+├── video_id (String)
+├── video_name (String)
+├── video_path (String)
+├── upload_time (Timestamp)
+├── status (String: pending/processing/completed/failed)
+├── error_message (Text, nullable)
+├── error_details (Text, nullable)
+├── results (JSONB)
+│   ├── total_people
+│   ├── crowd_level
+│   ├── peak_count
+│   ├── avg_density
+│   ├── bottleneck_area
+│   ├── suggested_nurses
+│   └── ai_summary
+└── created_at (Timestamp)</code></pre>
+
+            <h3>Request Flow</h3>
+            <ol>
+                <li><strong>Upload:</strong> Client uploads video → Saved to storage → Database entry created</li>
+                <li><strong>Analysis:</strong> YOLOv8 processes frames → Detects people → Calculates metrics</li>
+                <li><strong>AI Insights:</strong> Gemini analyzes metrics → Generates recommendations</li>
+                <li><strong>Storage:</strong> Results saved to PostgreSQL as JSONB</li>
+                <li><strong>Retrieval:</strong> Client fetches results via REST API</li>
+                <li><strong>Chat:</strong> User questions → Gemini responds with context from analysis</li>
+            </ol>
+        </div>
+
+        <!-- API Reference Tab -->
+        <div id="api" class="tab-content">
+            <h2>🔌 API Reference</h2>
+
+            <div class="alert alert-info">
+                <strong>Base URL:</strong> <code>http://localhost:8000/api</code><br>
+                <strong>Interactive Docs:</strong> <code>http://localhost:8000/docs</code>
+            </div>
+
+            <h3>Upload Endpoints</h3>
+            
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/upload</span>
+                </div>
+                <p><strong>Description:</strong> Upload a video file for analysis</p>
+                <p><strong>Content-Type:</strong> multipart/form-data</p>
+                <p><strong>Request Body:</strong></p>
+                <pre><code>FormData: {
+  file: File (video/mp4, video/avi)
+}</code></pre>
+                <p><strong>Response (201):</strong></p>
+                <pre><code>{
+  "id": "video123",
+  "name": "ER_waiting_room.mp4",
+  "path": "/uploads/video123.mp4",
+  "size": 15728640,
+  "uploaded_at": "2025-11-08T10:30:00Z"
+}</code></pre>
+            </div>
+
+            <h3>Analysis Endpoints</h3>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/analyze/{video_id}</span>
+                </div>
+                <p><strong>Description:</strong> Start video analysis</p>
+                <p><strong>Request Body:</strong></p>
+                <pre><code>{
+  "upload_id": "video123",
+  "show_visual": false,
+  "save_annotated_video": false,
+  "frame_sample_rate": 30,
+  "confidence_threshold": 0.5,
+  "enable_ai_insights": true,
+  "gemini_api_key": "your-api-key"
+}</code></pre>
+                <p><strong>Response (200):</strong></p>
+                <pre><code>{
+  "analysis_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "processing",
+  "message": "Analysis started successfully"
+}</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/analyze/status/{analysis_id}</span>
+                </div>
+                <p><strong>Description:</strong> Check analysis status</p>
+                <p><strong>Response (200):</strong></p>
+                <pre><code>{
+  "analysis_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "completed",
+  "progress": 100,
+  "message": "Analysis completed successfully",
+  "result": { ... }
+}</code></pre>
+            </div>
+
+            <h3>Results Endpoints</h3>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/results/{analysis_id}</span>
+                </div>
+                <p><strong>Description:</strong> Get detailed analysis results</p>
+                <p><strong>Response (200):</strong></p>
+                <pre><code>{
+  "analysis_id": "550e8400-e29b-41d4-a716-446655440000",
+  "video_name": "ER_waiting_room.mp4",
+  "upload_time": "2025-11-08T10:30:00Z",
+  "results": {
+    "total_people": 27,
+    "crowd_level": "High",
+    "peak_count": 32,
+    "avg_density": 0.78,
+    "bottleneck_area": "Triage Room",
+    "suggested_nurses": 3,
+    "ai_summary": "The triage area is crowded. Adding 1 nurse could reduce wait time by 20%."
+  }
+}</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/results?page=1&limit=10</span>
+                </div>
+                <p><strong>Description:</strong> List all analysis results with pagination</p>
+                <p><strong>Query Parameters:</strong></p>
+                <ul>
+                    <li><code>page</code> (int): Page number (default: 1)</li>
+                    <li><code>limit</code> (int): Results per page (default: 10, max: 100)</li>
+                    <li><code>crowd_level</code> (string): Filter by crowd level</li>
+                    <li><code>sort_by</code> (string): Sort field</li>
+                    <li><code>sort_order</code> (string): asc or desc</li>
+                </ul>
+            </div>
+
+            <h3>Chat Endpoints</h3>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/chat/start/{analysis_id}</span>
+                </div>
+                <p><strong>Description:</strong> Start a chat session about an analysis</p>
+                <p><strong>Response (200):</strong></p>
+                <pre><code>{
+  "session_id": "chat-123",
+  "analysis_id": "550e8400-e29b-41d4-a716-446655440000",
+  "message": "Chat session started"
+}</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/chat/message</span>
+                </div>
+                <p><strong>Description:</strong> Send a message to the AI assistant</p>
+                <p><strong>Request Body:</strong></p>
+                <pre><code>{
+  "analysis_id": "550e8400-e29b-41d4-a716-446655440000",
+  "message": "What if we only have 2 nurses?",
+  "history": []
+}</code></pre>
+                <p><strong>Response (200):</strong></p>
+                <pre><code>{
+  "response": "If nurse count drops to 2, average patient wait time could increase by 35%. Suggest prioritizing triage for critical cases."
+}</code></pre>
+            </div>
+
+            <h3>Export Endpoints</h3>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/results/{analysis_id}/export/json</span>
+                </div>
+                <p><strong>Description:</strong> Export results as JSON file</p>
+                <p><strong>Response:</strong> File download</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/results/{analysis_id}/export/summary</span>
+                </div>
+                <p><strong>Description:</strong> Export results as text summary</p>
+                <p><strong>Response:</strong> File download</p>
+            </div>
+        </div>
+
+        <!-- Integration Tests Tab -->
+        <div id="integration" class="tab-content">
+            <h2>🧪 Integration Tests</h2>
+
+            <div class="alert alert-warning">
+                <strong>⚠️ Prerequisites:</strong><br>
+                1. Server must be running at <code>http://localhost:8000</code><br>
+                2. Test video <code>sample_video.mp4</code> must exist in project root<br>
+                3. Database must be accessible and migrated
+            </div>
+
+            <div class="test-runner">
+                <h3>Test Suite Runner</h3>
+                
+                <div class="test-controls">
+                    <button class="btn btn-primary" onclick="runAllTests()">▶️ Run All Tests</button>
+                    <button class="btn btn-success" onclick="runTest('workflow')">Test 1: Complete Workflow</button>
+                    <button class="btn btn-success" onclick="runTest('concurrent')">Test 2: Concurrent Operations</button>
+                    <button class="btn btn-success" onclick="runTest('consistency')">Test 3: Data Consistency</button>
+                    <button class="btn btn-success" onclick="runTest('errors')">Test 4: Error Handling</button>
+                    <button class="btn btn-success" onclick="runTest('pagination')">Test 5: Pagination</button>
+                    <button class="btn btn-success" onclick="runTest('filtering')">Test 6: Filtering & Sorting</button>
+                    <button class="btn btn-danger" onclick="clearOutput()">🗑️ Clear Output</button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Running tests...</p>
+                </div>
+
+                <div class="test-summary" id="testSummary" style="display: none;">
+                    <div class="stat-card">
+                        <h3 id="totalTests">0</h3>
+                        <p>Total Tests</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="passedTests">0</h3>
+                        <p>Passed</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="failedTests">0</h3>
+                        <p>Failed</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="successRate">0%</h3>
+                        <p>Success Rate</p>
+                    </div>
+                </div>
+
+                <div class="test-output" id="testOutput">
+                    <p style="color: #888;">Click "Run All Tests" to start the integration test suite...</p>
+                </div>
+            </div>
+
+            <h3>Test Coverage</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Test Name</th>
+                        <th>Description</th>
+                        <th>Coverage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Complete Workflow</td>
+                        <td>Tests full cycle: Upload → Analyze → Chat → Export</td>
+                        <td>7 steps</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Concurrent Operations</td>
+                        <td>Tests multiple simultaneous API calls</td>
+                        <td>5 endpoints</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Data Consistency</td>
+                        <td>Verifies same data across different endpoints</td>
+                        <td>5 checks</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Error Handling</td>
+                        <td>Tests invalid requests and edge cases</td>
+                        <td>4 scenarios</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Pagination</td>
+                        <td>Validates pagination metadata and navigation</td>
+                        <td>6 checks</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>Filtering & Sorting</td>
+                        <td>Tests query parameters and data ordering</td>
+                        <td>4 scenarios</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Quick Start Tab -->
+        <div id="quickstart" class="tab-content">
+            <h2>🚀 Quick Start Guide</h2>
+
+            <h3>1️⃣ Clone the Repository</h3>
+            <pre><code>git clone https://github.com/yourusername/hospitwin-lite.git
+cd hospitwin-lite</code></pre>
+
+            <h3>2️⃣ Set Up Backend</h3>
+            <pre><code># Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env and add your GEMINI_API_KEY and DATABASE_URL
+
+# Run database migrations
+python -m app.migrations.run_migration
+
+# Start the server
+uvicorn app.main:app --reload</code></pre>
+
+            <h3>3️⃣ Verify Server is Running</h3>
+            <pre><code>curl http://localhost:8000/health</code></pre>
+            <p>Expected response: <code>{"status": "healthy"}</code></p>
+
+            <h3>4️⃣ Run Integration Tests</h3>
+            <pre><code># Make sure you have sample_video.mp4 in the project root
+python tests/test_integration.py</code></pre>
+
+            <h3>5️⃣ Access API Documentation</h3>
+            <p>Open your browser and visit:</p>
+            <ul>
+                <li><strong>Swagger UI:</strong> <a href="http://localhost:8000/docs" target="_blank">http://localhost:8000/docs</a></li>
+                <li><strong>ReDoc:</strong> <a href="http://localhost:8000/redoc" target="_blank">http://localhost:8000/redoc</a></li>
+                <li><strong>This Documentation:</strong> Open <code>docs/index.html</code> in your browser</li>
+            </ul>
+
+            <h3>6️⃣ Upload Your First Video</h3>
+            <pre><code>curl -X POST http://localhost:8000/api/upload \
+  -F "file=@sample_video.mp4"</code></pre>
+
+            <h3>7️⃣ Start Analysis</h3>
+            <pre><code>curl -X POST http://localhost:8000/api/analyze/VIDEO_ID \
+  -H "Content-Type: application/json" \
+  -d '{
+    "upload_id": "VIDEO_ID",
+    "show_visual": false,
+    "save_annotated_video": false,
+    "frame_sample_rate": 30,
+    "confidence_threshold": 0.5,
+    "enable_ai_insights": true,
+    "gemini_api_key": "YOUR_GEMINI_API_KEY"
+  }'</code></pre>
+
+            <div class="alert alert-success">
+                <strong>✅ Success!</strong> You're all set up. Check the Integration Tests tab to run the full test suite.
+            </div>
+
+            <h3>Troubleshooting</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Issue</th>
+                        <th>Solution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Server won't start</td>
+                        <td>Check if port 8000 is available: <code>lsof -i :8000</code></td>
+                    </tr>
+                    <tr>
+                        <td>Database connection error</td>
+                        <td>Verify DATABASE_URL in .env file is correct</td>
+                    </tr>
+                    <tr>
+                        <td>YOLO model not found</td>
+                        <td>First run will download the model automatically</td>
+                    </tr>
+                    <tr>
+                        <td>Gemini API error</td>
+                        <td>Ensure GEMINI_API_KEY is set correctly in .env</td>
+                    </tr>
+                    <tr>
+                        <td>Tests failing</td>
+                        <td>Ensure sample_video.mp4 exists and server is running</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p>HospiTwin Lite - Emergency Room Flow Analyzer</p>
+            <p>Built with ❤️ using FastAPI, PostgreSQL, YOLOv8, and Gemini AI</p>
+        </footer>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function appendOutput(text, color = '#f8f8f2') {
+            const output = document.getElementById('testOutput');
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.textContent = text;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('testOutput').innerHTML = '<p style="color: #888;">Click "Run All Tests" to start the integration test suite...</p>';
+            document.getElementById('testSummary').style.display = 'none';
+        }
+
+        async function runAllTests() {
+            clearOutput();
+            document.getElementById('loading').classList.add('active');
+            
+            appendOutput('=' + '='.repeat(79), '#667eea');
+            appendOutput(' PHASE 8: INTEGRATION TEST SUITE', '#667eea');
+            appendOutput('=' + '='.repeat(79), '#667eea');
+            appendOutput('');
+
+            try {
+                // Check if server is running
+                appendOutput('Checking server status...', '#ffc107');
+                const healthCheck = await fetch('http://localhost:8000/health');
+                
+                if (!healthCheck.ok) {
+                    throw new Error('Server is not running');
+                }
+                
+                appendOutput('✅ Server is running', '#28a745');
+                appendOutput('');
+
+                // Run Python test suite
+                appendOutput('Starting integration tests...', '#ffc107');
+                appendOutput('This will execute the Python test suite.', '#888');
+                appendOutput('');
+
+                const response = await fetch('http://localhost:8000/api/test/integration', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.output) {
+                    // Parse and display output
+                    const lines = result.output.split('\n');
+                    lines.forEach(line => {
+                        let color = '#f8f8f2';
+                        if (line.includes('✅') || line.includes('PASS')) {
+                            color = '#28a745';
+                        } else if (line.includes('❌') || line.includes('FAIL')) {
+                            color = '#dc3545';
+                        } else if (line.includes('⚠️')) {
+                            color = '#ffc107';
+                        } else if (line.includes('===')) {
+                            color = '#667eea';
+                        }
+                        appendOutput(line, color);
+                    });
+                }
+
+                // Update summary
+                if (result.summary) {
+                    updateSummary(result.summary);
+                }
+
+            } catch (error) {
+                appendOutput('', '#dc3545');
+                appendOutput('❌ ERROR: ' + error.message, '#dc3545');
+                appendOutput('', '#dc3545');
+                appendOutput('Make sure:', '#ffc107');
+                appendOutput('1. Server is running: uvicorn app.main:app --reload', '#888');
+                appendOutput('2. sample_video.mp4 exists in project root', '#888');
+                appendOutput('3. Database is accessible', '#888');
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        async function runTest(testName) {
+            appendOutput(`\nRunning ${testName} test...`, '#ffc107');
+            appendOutput('Note: Individual test execution requires full test suite run.', '#888');
+            appendOutput('Please use "Run All Tests" button for complete results.\n', '#888');
+        }
+
+        function updateSummary(summary) {
+            document.getElementById('testSummary').style.display = 'grid';
+            document.getElementById('totalTests').textContent = summary.total || 0;
+            document.getElementById('passedTests').textContent = summary.passed || 0;
+            document.getElementById('failedTests').textContent = summary.failed || 0;
+            
+            const successRate = summary.total > 0 
+                ? Math.round((summary.passed / summary.total) * 100) 
+                : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        // Auto-check server status on page load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                if (response.ok) {
+                    console.log('✅ Server is running');
+                }
+            } catch (error) {
+                console.warn('⚠️ Server appears to be offline');
+            }
+        });
+    </script>
+</body>
+</html>
