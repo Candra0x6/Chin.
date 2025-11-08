@@ -569,10 +569,10 @@ async def get_statistics_overview():
             detail=f"Failed to get statistics: {str(e)}"
         )
 
-
 # ============================================================================
 # DELETE ENDPOINT
 # ============================================================================
+
 
 @router.delete("/{analysis_id}")
 async def delete_analysis(analysis_id: str):
