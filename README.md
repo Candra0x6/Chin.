@@ -72,10 +72,65 @@ HospiTwin Lite analyzes hospital emergency room queue videos to:
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-6. **Access the API**
+7. **Access the API**
    - API Documentation: http://localhost:8000/docs
    - Alternative Docs: http://localhost:8000/redoc
    - Health Check: http://localhost:8000/health
+
+## 📚 Developer Documentation
+
+### Interactive Web Documentation
+
+We provide a comprehensive **web-based developer documentation** with interactive testing capabilities:
+
+**Quick Access:**
+```bash
+# Windows
+open-docs.bat
+
+# Linux/Mac
+bash open-docs.sh
+
+# Or open manually
+start docs/index.html  # Windows
+open docs/index.html   # Mac
+xdg-open docs/index.html  # Linux
+```
+
+**Features:**
+- 📖 **Complete Project Overview** - Architecture, tech stack, and features
+- 🔌 **API Reference** - Full REST API documentation with examples
+- 🧪 **Interactive Test Runner** - Run integration tests from your browser
+- 🚀 **Quick Start Guide** - Step-by-step setup instructions
+- 📊 **Real-time Test Results** - Live test execution and visualization
+
+### Integration Testing via Web Interface
+
+The documentation includes an **Interactive Test Runner** that allows you to:
+1. Run the complete integration test suite with one click
+2. View real-time test execution output
+3. See test statistics and success rates
+4. Identify failing tests instantly
+
+**To use:**
+1. Ensure backend server is running: `uvicorn app.main:app --reload`
+2. Open `docs/index.html` in your browser
+3. Navigate to "🧪 Integration Tests" tab
+4. Click "▶️ Run All Tests"
+
+**Test API Endpoints:**
+```bash
+# Run integration tests
+POST http://localhost:8000/api/test/integration
+
+# Check test status
+GET http://localhost:8000/api/test/status
+
+# Get latest results
+GET http://localhost:8000/api/test/results
+```
+
+See `docs/README.md` for complete documentation details.
 
 ## 📁 Project Structure
 
