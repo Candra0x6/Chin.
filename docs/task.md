@@ -1,5 +1,5 @@
 
-# HospiTwin Lite - Backend Implementation
+# Chin  - Backend Implementation
 
 Video-based Emergency Room Flow Analyzer using AI and Computer Vision to detect patient flow bottlenecks and recommend operational improvements.
 
@@ -14,7 +14,7 @@ Video-based Emergency Room Flow Analyzer using AI and Computer Vision to detect 
 - [x] Create core application files (main.py, config.py, models.py)
 - [x] Create README.md with setup instructions
 - [x] Create .gitignore file
-- [x] **Updated: Switch from SQLite to Supabase**
+- [x] **Updated: Switch from SQ to Supabase**
 - [x] Create Supabase database module (database.py)
 - [x] Create database schemas (schemas.py)
 - [x] Create Supabase setup guide

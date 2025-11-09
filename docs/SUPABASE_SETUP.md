@@ -1,6 +1,6 @@
 # 🗄️ Supabase Database Setup Guide
 
-This guide will help you set up Supabase as the database for HospiTwin Lite.
+This guide will help you set up Supabase as the database for Chin .
 
 ## 📋 Prerequisites
 

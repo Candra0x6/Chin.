@@ -1,5 +1,5 @@
 """
-Configuration module for HospiTwin Lite application.
+Configuration module for Chin  application.
 Handles environment variables and application settings.
 """
 

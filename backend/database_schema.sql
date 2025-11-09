@@ -1,4 +1,4 @@
--- HospiTwin Lite Database Schema
+-- Chin  Database Schema
 -- Run this in your Supabase SQL Editor to create the required tables
 
 -- Enable UUID extension

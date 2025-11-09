@@ -1,10 +1,10 @@
-# HospiTwin Lite - Backend
+# Chin  - Backend
 
 **Video-based Emergency Room Flow Analyzer** using AI and Computer Vision to detect patient flow bottlenecks and recommend operational improvements.
 
 ## 🎯 Overview
 
-HospiTwin Lite analyzes hospital emergency room queue videos to:
+Chin  analyzes hospital emergency room queue videos to:
 - Detect and count people using YOLOv8
 - Calculate crowd density and congestion patterns
 - Identify bottlenecks in patient flow

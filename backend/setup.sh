@@ -1,7 +1,7 @@
 #!/bin/bash
-# Setup script for HospiTwin Lite Backend
+# Setup script for Chin  Backend
 
-echo "🏥 HospiTwin Lite - Setup Script"
+echo "🏥 Chin  - Setup Script"
 echo "================================"
 echo ""
 

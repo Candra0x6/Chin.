@@ -1,5 +1,5 @@
 """
-Main FastAPI application entry point for HospiTwin Lite.
+Main FastAPI application entry point for Chin .
 """
 
 from fastapi import FastAPI
@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     settings.get_results_path()
     settings.get_model_path()
     
-    print("🚀 HospiTwin Lite Backend Started")
+    print("🚀 Chin  Backend Started")
     print(f"📁 Upload directory: {settings.upload_dir}")
     print(f"📁 Results directory: {settings.results_dir}")
     print(f"📁 Models directory: {settings.model_path}")
@@ -27,12 +27,12 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown: Cleanup if needed
-    print("👋 HospiTwin Lite Backend Shutting Down")
+    print("👋 Chin  Backend Shutting Down")
 
 
 # Initialize FastAPI application
 app = FastAPI(
-    title="HospiTwin Lite API",
+    title="Chin  API",
     description="Video-based Emergency Room Flow Analyzer with AI insights",
     version="1.0.0",
     lifespan=lifespan
@@ -60,7 +60,7 @@ app.include_router(test.router)
 async def root():
     """Root endpoint - API health check."""
     return {
-        "message": "HospiTwin Lite API",
+        "message": "Chin  API",
         "status": "operational",
         "version": "1.0.0",
         "docs": "/docs"

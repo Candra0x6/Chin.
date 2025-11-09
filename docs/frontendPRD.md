@@ -1,5 +1,5 @@
 
-# 🏥 **HospiTwin Lite Frontend – Next.js PRD**
+# 🏥 **Chin  Frontend – Next.js PRD**
 
 ### 📄 **Product Requirement Document (Frontend)**
 
@@ -10,7 +10,7 @@
 
 ## 1️⃣ **Product Overview**
 
-> **HospiTwin Lite Frontend** provides a web interface for hospital managers to upload short ER queue videos, visualize analysis results, and interact with an AI assistant that explains and recommends actions.
+> **Chin  Frontend** provides a web interface for hospital managers to upload short ER queue videos, visualize analysis results, and interact with an AI assistant that explains and recommends actions.
 
 **Core Objectives:**
 
@@ -25,7 +25,7 @@ All of this runs **locally or on free hosting (e.g., Vercel)** and connects dire
 ## 2️⃣ **User Flow**
 
 ```
-1️⃣ User opens HospiTwin Lite web app
+1️⃣ User opens Chin  web app
      ↓
 2️⃣ Uploads ER video (MP4, max 2 minutes)
      ↓
@@ -64,7 +64,7 @@ All of this runs **locally or on free hosting (e.g., Vercel)** and connects dire
 
 ```
 ---------------------------------------------------------
-|  🏥 HospiTwin Lite                                    |
+|  🏥 Chin                                     |
 ---------------------------------------------------------
 | [ Upload Video Button ]  [ Progress Bar ]             |
 ---------------------------------------------------------

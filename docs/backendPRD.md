@@ -1,6 +1,6 @@
 
 
-# 🏥 **HospiTwin Lite – Video-based Emergency Room Flow Analyzer**
+# 🏥 **Chin  – Video-based Emergency Room Flow Analyzer**
 
 ### 📄 **Product Requirement Document (PRD)**
 
@@ -12,7 +12,7 @@
 
 ## 1️⃣ **Product Overview**
 
-> **HospiTwin Lite** is a simplified AI backend that analyzes hospital emergency room (ER) queue videos to detect patient flow bottlenecks and recommend operational improvements using video analytics and AI insights.
+> **Chin ** is a simplified AI backend that analyzes hospital emergency room (ER) queue videos to detect patient flow bottlenecks and recommend operational improvements using video analytics and AI insights.
 
 **Core Idea:**
 From a single video input (e.g., ER waiting area), the system uses **computer vision (YOLO + OpenCV)** to count people and detect crowded areas, then provides **AI-generated insights** using **Gemini** based on those metrics.

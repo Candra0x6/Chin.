@@ -1,1 +1,1 @@
-"""Test suite for HospiTwin Lite backend."""
+"""Test suite for Chin  backend."""

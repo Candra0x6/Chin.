@@ -1,8 +1,8 @@
-# 🔄 Database Migration: SQLite → Supabase
+# 🔄 Database Migration: SQ → Supabase
 
 ## Summary
 
-Successfully migrated the HospiTwin Lite backend from SQLite to Supabase (PostgreSQL) before Phase 2 implementation.
+Successfully migrated the Chin  backend from SQ to Supabase (PostgreSQL) before Phase 2 implementation.
 
 ## 📋 Changes Made
 
@@ -12,7 +12,7 @@ Successfully migrated the HospiTwin Lite backend from SQLite to Supabase (Postgr
 
 **Removed:**
 ```python
-aiosqlite==0.19.0
+aiosq==0.19.0
 ```
 
 **Added:**
@@ -27,7 +27,7 @@ postgrest==0.14.0
 
 **Removed:**
 ```env
-DATABASE_URL=sqlite:///./hospitwin.db
+DATABASE_URL=sq:///./Chin.db
 ```
 
 **Added:**
@@ -98,7 +98,7 @@ Comprehensive setup guide covering:
 
 ### 1. **Scalability**
 - Cloud-hosted PostgreSQL database
-- Handles concurrent connections better than SQLite
+- Handles concurrent connections better than SQ
 - Suitable for production deployment
 
 ### 2. **Real-time Capabilities**
@@ -287,9 +287,9 @@ message_data = {
 supabase.table('chat_history').insert(message_data).execute()
 ```
 
-## 🆚 Comparison: SQLite vs Supabase
+## 🆚 Comparison: SQ vs Supabase
 
-| Feature | SQLite | Supabase |
+| Feature | SQ | Supabase |
 |---------|--------|----------|
 | **Deployment** | Local file | Cloud-hosted |
 | **Concurrent Users** | Limited | Unlimited |

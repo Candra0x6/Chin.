@@ -1,7 +1,7 @@
 @echo off
-REM Setup script for HospiTwin Lite Backend (Windows)
+REM Setup script for Chin  Backend (Windows)
 
-echo 🏥 HospiTwin Lite - Setup Script
+echo 🏥 Chin  - Setup Script
 echo ================================
 echo.
 

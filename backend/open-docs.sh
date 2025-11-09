@@ -1,8 +1,8 @@
 #!/bin/bash
 # Open Developer Documentation
-# This script opens the HospiTwin Lite developer documentation in your default browser
+# This script opens the Chin  developer documentation in your default browser
 
-echo "🏥 HospiTwin Lite - Developer Documentation"
+echo "🏥 Chin  - Developer Documentation"
 echo "==========================================="
 echo ""
 

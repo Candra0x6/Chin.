@@ -2,7 +2,7 @@
 
 ## 📚 Overview
 
-This directory contains comprehensive developer documentation for the HospiTwin Lite project, including interactive API testing capabilities.
+This directory contains comprehensive developer documentation for the Chin  project, including interactive API testing capabilities.
 
 ## 🌐 Web-Based Documentation
 
@@ -34,7 +34,7 @@ xdg-open docs/index.html
 #### Option 2: Using Python HTTP Server
 ```bash
 # Navigate to project root
-cd path/to/hospitwin-lite
+cd path/to/Chin-
 
 # Start a local web server
 python -m http.server 8080
@@ -287,7 +287,7 @@ When adding new features:
 
 ## 📝 License
 
-This documentation is part of the HospiTwin Lite project.
+This documentation is part of the Chin  project.
 
 ---
 

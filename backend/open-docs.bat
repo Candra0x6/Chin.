@@ -1,10 +1,10 @@
 @echo off
 REM Open Developer Documentation (Windows)
-REM This script opens the HospiTwin Lite developer documentation in your default browser
+REM This script opens the Chin  developer documentation in your default browser
 
 echo.
 echo =========================================
-echo   HospiTwin Lite - Developer Documentation
+echo   Chin  - Developer Documentation
 echo =========================================
 echo.
 

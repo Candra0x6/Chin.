@@ -40,7 +40,7 @@ def print_result(test_name: str, success: bool, details: str = ""):
 
 
 class IntegrationTestSuite:
-    """Complete integration test suite for HospiTwin Lite"""
+    """Complete integration test suite for Chin """
     
     def __init__(self):
         self.results = {
