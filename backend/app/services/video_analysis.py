@@ -177,12 +177,7 @@ class VideoAnalysisService:
                 "timeline": self._generate_timeline(frames_data, detections)
             }
             
-            # Add detailed detections if requested
-            if save_detections:
-                results["frame_detections"] = self._format_frame_detections(
-                    frames_data, 
-                    detections
-                )
+           
             
             # Add insights
             results["insights"] = self._generate_insights(results)
