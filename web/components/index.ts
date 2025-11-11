@@ -37,3 +37,6 @@ export type { ThemeToggleProps } from './ThemeToggle';
 
 export { KeyboardShortcuts, KeyboardShortcutsModal } from './KeyboardShortcuts';
 export type { KeyboardShortcutsProps } from './KeyboardShortcuts';
+
+export { HospitalContextForm } from './HospitalContextForm';
+export type { HospitalContextFormProps, HospitalContext } from './HospitalContextForm';

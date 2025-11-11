@@ -2,11 +2,12 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadBox, Loader, ThemeToggle, KeyboardShortcuts, KeyboardShortcutsModal } from '@/components';
+import { UploadBox, Loader, ThemeToggle, KeyboardShortcuts, KeyboardShortcutsModal, HospitalContextForm } from '@/components';
 import { useToast } from '@/contexts';
 import { useApp } from '@/contexts';
 import { analyzeVideo } from '@/lib/api';
 import type { VideoUploadResponse } from '@/lib/types';
+import type { HospitalContext } from '@/components';
 
 export default function Home() {
   const router = useRouter();
@@ -14,52 +15,82 @@ export default function Home() {
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [uploadedResult, setUploadedResult] = useState<VideoUploadResponse | null>(null);
+  const [showHospitalForm, setShowHospitalForm] = useState(false);
   const uploadBoxRef = useRef<HTMLDivElement>(null);
 
+  const logDebug = (message: string, data?: Record<string, unknown> | string | number | HospitalContext): void => {
+    const timestamp = new Date().toISOString();
+    console.log(`[HomePage] ${timestamp} - ${message}`, data || '');
+  };
+
   const handleUploadSuccess = async (result: VideoUploadResponse) => {
-    console.log('Upload successful:', result);
-    setIsProcessing(true);
+    logDebug('Upload successful', { videoId: result.id, filename: result.filename });
+    setUploadedResult(result);
     setCurrentUploadId(result.id);
-    
+    setShowHospitalForm(true);
+    toast.info('Video uploaded! Please provide hospital context for enhanced analysis.');
+  };
+
+  const handleUploadError = (error: Error) => {
+    logDebug('Upload failed', { errorMessage: error.message });
+    toast.error(`Upload failed: ${error.message}`);
+  };
+
+  const handleHospitalContextSubmit = async (context: HospitalContext) => {
+    if (!uploadedResult) {
+      logDebug('Hospital context submitted but no uploaded result found');
+      return;
+    }
+
+    logDebug('Hospital context form submitted', {
+      location: context.location_name,
+      nurses: context.staffing.available_nurses,
+      beds: context.resources.available_beds,
+    });
+
+    setIsProcessing(true);
+    setShowHospitalForm(false);
+
     try {
-      // Show success toast
-      toast.success('Video uploaded! Starting analysis...');
-      
-      // Start analysis with the uploaded video ID
-      const analysisResult = await analyzeVideo(result.id, {
+      logDebug('Starting analysis with hospital context', { videoId: uploadedResult.id });
+
+      const analysisResult = await analyzeVideo(uploadedResult.id, {
         show_visual: false,
         save_annotated_video: false,
         frame_sample_rate: 30,
         confidence_threshold: 0.5,
         enable_ai_insights: true,
+        hospital_context: context as unknown as Record<string, unknown>,
       });
-      
-      console.log('Analysis started:', analysisResult);
-      
-      // Add to history with analysis_id
+
+      logDebug('Analysis started successfully', { analysisId: analysisResult.analysis_id });
+
       addToHistory({
         id: analysisResult.analysis_id,
-        filename: result.filename || 'Unknown',
+        filename: uploadedResult.filename || 'Unknown',
         uploadedAt: new Date().toISOString(),
         status: 'processing',
       });
-      
-      // Navigate to analysis page with the analysis ID (not video ID)
-      toast.info('Analysis started! Redirecting...');
+
+      toast.success('Analysis started with hospital context!');
       setTimeout(() => {
+        logDebug('Navigating to analysis page', { analysisId: analysisResult.analysis_id });
         router.push(`/analysis/${analysisResult.analysis_id}`);
       }, 500);
     } catch (error) {
-      console.error('Failed to start analysis:', error);
+      logDebug('Failed to start analysis', { error: error instanceof Error ? error.message : 'Unknown error' });
       toast.error(`Failed to start analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsProcessing(false);
+      setShowHospitalForm(true);
     }
   };
 
-  const handleUploadError = (error: Error) => {
-    console.error('Upload failed:', error);
-    toast.error(`Upload failed: ${error.message}`);
-    setIsProcessing(false);
+  const handleHospitalContextCancel = () => {
+    logDebug('Hospital context form cancelled');
+    setShowHospitalForm(false);
+    setUploadedResult(null);
+    toast.info('Ready to upload another video');
   };
 
   const scrollToUpload = () => {
@@ -72,6 +103,51 @@ export default function Home() {
         message="Redirecting to analysis..." 
         fullscreen 
       />
+    );
+  }
+
+  if (showHospitalForm && uploadedResult) {
+    return (
+      <>
+        <KeyboardShortcuts
+          onUpload={scrollToUpload}
+          onHistory={() => router.push('/history')}
+          onHelp={() => setShowShortcuts(true)}
+        />
+        
+        <KeyboardShortcutsModal
+          isOpen={showShortcuts}
+          onClose={() => setShowShortcuts(false)}
+        />
+
+        <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+          <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-300">
+            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    🏥 Chin ER Flow Analyzer
+                  </h1>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Hospital Context Setup
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <HospitalContextForm
+              onSubmit={handleHospitalContextSubmit}
+              onCancel={handleHospitalContextCancel}
+              isLoading={isProcessing}
+            />
+          </main>
+        </div>
+      </>
     );
   }
 
@@ -88,7 +164,7 @@ export default function Home() {
         onClose={() => setShowShortcuts(false)}
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
       {/* Header */}
       <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-300">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

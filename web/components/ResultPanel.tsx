@@ -11,6 +11,31 @@ import { CrowdTimelineChart } from './CrowdTimelineChart';
 import { BottleneckChart } from './BottleneckChart';
 import { SpatialDistributionChart } from './SpatialDistributionChart';
 
+export interface HospitalAnalytics {
+  summary?: string;
+  location?: string;
+  staffing_analysis?: {
+    recommended_nurses?: number;
+    predicted_wait_time_minutes?: number;
+    probability_waiting?: number;
+    system_utilization?: number;
+    additional_nurses_needed?: number;
+    algorithm?: string;
+  };
+  bed_analysis?: {
+    current_occupancy_rate?: number;
+    additional_capacity_needed?: number;
+    estimated_beds_needed?: number;
+    projected_occupancy_rate?: number;
+    urgency_level?: string;
+    recommendation?: string;
+    algorithm?: string;
+  };
+  capacity_score?: number;
+  critical_alerts?: string[];
+  overall_status?: string;
+}
+
 export interface ResultPanelProps {
   /** Analysis results to display */
   results: AnalysisResults;
@@ -22,6 +47,8 @@ export interface ResultPanelProps {
   onExport?: (format: 'json' | 'summary') => void;
   /** Custom class name */
   className?: string;
+  /** Hospital analytics data */
+  hospitalAnalytics?: HospitalAnalytics | null;
 }
 
 /**
@@ -129,10 +156,11 @@ export function ResultPanel({
   videoName,
   analysisId,
   onExport,
+  hospitalAnalytics,
   className = '',
 }: ResultPanelProps): React.ReactElement {
   const crowdLevelColor = getCrowdLevelColor(results.crowd_level);
-
+  console.log('Hospital Analytics:', hospitalAnalytics);
   return (
     <div className={`w-full max-w-6xl mx-auto ${className}`}>
       {/* Header */}
@@ -233,6 +261,223 @@ export function ResultPanel({
           </div>
         </div>
       </div>
+
+      {/* Hospital Context Analytics */}
+      {hospitalAnalytics && (
+        <div className="mb-6 space-y-6">
+          {/* Header with Location */}
+          {hospitalAnalytics.location && (
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-linear-to-r from-cyan-500 to-blue-500 rounded-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5.581m0 0H9m0 0h5.581" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Hospital Analytics - {hospitalAnalytics.location}
+                </h3>
+                {hospitalAnalytics.overall_status && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Status: <span className="font-medium">{hospitalAnalytics.overall_status}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Capacity Score and Critical Alerts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {hospitalAnalytics.capacity_score !== undefined && (
+              <div className="p-6 bg-linear-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                    Capacity Score
+                  </p>
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div className="flex items-end gap-2">
+                  <p className="text-4xl font-bold text-purple-900 dark:text-purple-100">
+                    {hospitalAnalytics.capacity_score.toFixed(1)}
+                  </p>
+                  <p className="text-sm text-purple-700 dark:text-purple-200 mb-1">/100</p>
+                </div>
+                {/* Score progress bar */}
+                <div className="mt-4 bg-purple-200 dark:bg-purple-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-linear-to-r from-purple-600 to-pink-600 h-full transition-all"
+                    style={{ width: `${Math.min(hospitalAnalytics.capacity_score, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {hospitalAnalytics.critical_alerts && hospitalAnalytics.critical_alerts.length > 0 && (
+              <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-red-600 rounded-lg shrink-0">
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-red-900 dark:text-red-100 mb-2">
+                      Critical Alerts ({hospitalAnalytics.critical_alerts.length})
+                    </p>
+                    <ul className="space-y-1">
+                      {hospitalAnalytics.critical_alerts.map((alert, idx) => (
+                        <li key={idx} className="text-sm text-red-800 dark:text-red-200 flex items-start gap-2">
+                          <span className="text-red-600 dark:text-red-400 mt-0.5">⚠</span>
+                          <span>{alert}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Staffing Analysis */}
+          {hospitalAnalytics.staffing_analysis && (
+            <div className="p-6 bg-linear-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h4 className="text-base font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Staffing Analysis
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {hospitalAnalytics.staffing_analysis.recommended_nurses !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-blue-100 dark:border-blue-700">
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Recommended</p>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                      {hospitalAnalytics.staffing_analysis.recommended_nurses}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Nurses</p>
+                  </div>
+                )}
+                {hospitalAnalytics.staffing_analysis.additional_nurses_needed !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-orange-100 dark:border-orange-700">
+                    <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Additional Needed</p>
+                    <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 mt-1">
+                      {hospitalAnalytics.staffing_analysis.additional_nurses_needed}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Nurses</p>
+                  </div>
+                )}
+                {hospitalAnalytics.staffing_analysis.predicted_wait_time_minutes !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-yellow-100 dark:border-yellow-700">
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Wait Time</p>
+                    <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100 mt-1">
+                      {hospitalAnalytics.staffing_analysis.predicted_wait_time_minutes.toFixed(1)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Minutes</p>
+                  </div>
+                )}
+                {hospitalAnalytics.staffing_analysis.system_utilization !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-green-100 dark:border-green-700">
+                    <p className="text-xs text-green-600 dark:text-green-400 font-medium">Utilization</p>
+                    <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+                      {(hospitalAnalytics.staffing_analysis.system_utilization * 100).toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">System</p>
+                  </div>
+                )}
+              </div>
+              {hospitalAnalytics.staffing_analysis.algorithm && (
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                  <span className="font-medium">Algorithm:</span> {hospitalAnalytics.staffing_analysis.algorithm}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Bed Analysis */}
+          {hospitalAnalytics.bed_analysis && (
+            <div className="p-6 bg-linear-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <h4 className="text-base font-semibold text-emerald-900 dark:text-emerald-100 mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12M8 7a2 2 0 100-4H8a2 2 0 000 4zm0 0v10m0-10L4 7m16 0l4 0M4 7a2 2 0 110 4h2m12-4a2 2 0 110 4h-2m0-4v10" />
+                </svg>
+                Bed Analysis
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {hospitalAnalytics.bed_analysis.current_occupancy_rate !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-emerald-100 dark:border-emerald-700">
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Occupancy</p>
+                    <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">
+                      {(hospitalAnalytics.bed_analysis.current_occupancy_rate * 100).toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Current</p>
+                  </div>
+                )}
+                {hospitalAnalytics.bed_analysis.additional_capacity_needed !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-red-100 dark:border-red-700">
+                    <p className="text-xs text-red-600 dark:text-red-400 font-medium">Capacity Needed</p>
+                    <p className="text-2xl font-bold text-red-900 dark:text-red-100 mt-1">
+                      {hospitalAnalytics.bed_analysis.additional_capacity_needed}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Beds</p>
+                  </div>
+                )}
+                {hospitalAnalytics.bed_analysis.estimated_beds_needed !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-blue-100 dark:border-blue-700">
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Forecast</p>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                      {hospitalAnalytics.bed_analysis.estimated_beds_needed.toFixed(1)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Beds</p>
+                  </div>
+                )}
+                {hospitalAnalytics.bed_analysis.projected_occupancy_rate !== undefined && (
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded border border-purple-100 dark:border-purple-700">
+                    <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Projected</p>
+                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                      {(hospitalAnalytics.bed_analysis.projected_occupancy_rate * 100).toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Occupancy</p>
+                  </div>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                {hospitalAnalytics.bed_analysis.urgency_level && (
+                  <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded border border-emerald-100 dark:border-emerald-700">
+                    <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Urgency Level</p>
+                    <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 mt-1">
+                      {hospitalAnalytics.bed_analysis.urgency_level}
+                    </p>
+                  </div>
+                )}
+                {hospitalAnalytics.bed_analysis.recommendation && (
+                  <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded border border-emerald-100 dark:border-emerald-700">
+                    <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Recommendation</p>
+                    <p className="text-sm text-emerald-900 dark:text-emerald-100 mt-1">
+                      {hospitalAnalytics.bed_analysis.recommendation}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {hospitalAnalytics.bed_analysis.algorithm && (
+                <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-700">
+                  <span className="font-medium">Algorithm:</span> {hospitalAnalytics.bed_analysis.algorithm}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Summary */}
+          {hospitalAnalytics.summary && (
+            <div className="p-4 bg-linear-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+              <p className="text-sm text-indigo-900 dark:text-indigo-100 leading-relaxed">
+                <span className="font-semibold">Summary:</span> {hospitalAnalytics.summary}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Bottleneck Analysis */}
       {results.bottlenecks && results.bottlenecks.length > 0 && (

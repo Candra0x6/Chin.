@@ -195,19 +195,28 @@ export async function analyzeVideo(
     confidence_threshold?: number;
     enable_ai_insights?: boolean;
     gemini_api_key?: string;
+    hospital_context?: Record<string, unknown>;
   }
 ): Promise<{ analysis_id: string; message: string; status: string }> {
+  const payload: Record<string, unknown> = {
+    upload_id: videoId,
+    show_visual: config?.show_visual ?? false,
+    save_annotated_video: config?.save_annotated_video ?? false,
+    frame_sample_rate: config?.frame_sample_rate ?? 30,
+    confidence_threshold: config?.confidence_threshold ?? 0.5,
+    enable_ai_insights: config?.enable_ai_insights ?? true,
+    gemini_api_key: config?.gemini_api_key ?? '',
+  };
+
+  // Include hospital context if provided
+  if (config?.hospital_context) {
+    payload.hospital_context = config.hospital_context;
+    console.log('[analyzeVideo] Hospital context included in request:', config.hospital_context);
+  }
+
   const response = await apiClient.post(
     `/api/analyze/${videoId}`,
-    {
-      upload_id: videoId,
-      show_visual: config?.show_visual ?? false,
-      save_annotated_video: config?.save_annotated_video ?? false,
-      frame_sample_rate: config?.frame_sample_rate ?? 30,
-      confidence_threshold: config?.confidence_threshold ?? 0.5,
-      enable_ai_insights: config?.enable_ai_insights ?? true,
-      gemini_api_key: config?.gemini_api_key ?? '',
-    }
+    payload
   );
   return response.data;
 }

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ResultPanel, Loader, InlineLoader } from '@/components';
 import { getAnalysisResult, getAnalysisStatus } from '@/lib/api';
 import type { AnalysisResults, AnalysisStatus } from '@/lib/types';
+import type { HospitalAnalytics } from '@/components/ResultPanel';
 
 export default function AnalysisPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function AnalysisPage() {
 
   const [status, setStatus] = useState<AnalysisStatus | null>(null);
   const [results, setResults] = useState<AnalysisResults | null>(null);
+  const [hospitalAnalytics, setHospitalAnalytics] = useState<HospitalAnalytics | null>(null);
   const [videoName, setVideoName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(true);
@@ -78,6 +80,10 @@ export default function AnalysisPage() {
             frames_analyzed: rawResults.statistics?.total_frames,
             detection_confidence: rawResults.processing_info?.confidence_threshold,
           };
+          console.log('Transformed Results:', rawResults);
+          
+          // Extract hospital analytics if available
+          setHospitalAnalytics(rawResults.hospital_analytics || null);
           
           setResults(transformedResults);
           setIsPolling(false);
@@ -305,6 +311,7 @@ ${results.ai_insights.recommendations?.map((r, i) => `${i + 1}. ${r}`).join('\n'
           videoName={videoName}
           analysisId={analysisId}
           onExport={handleExport}
+          hospitalAnalytics={hospitalAnalytics}
         />
       </main>
     </div>
