@@ -101,6 +101,82 @@ class ChatMessage(BaseModel):
     """Model for chat messages."""
     
 
+class HospitalStaffing(BaseModel):
+    """Model for hospital staffing data."""
+    
+    total_nurses: int = Field(..., description="Total number of nurses on duty", ge=0)
+    total_doctors: int = Field(..., description="Total number of doctors on duty", ge=0)
+    available_nurses: int = Field(..., description="Currently available nurses", ge=0)
+    available_doctors: int = Field(..., description="Currently available doctors", ge=0)
+    shift_type: str = Field(default="day", description="Shift type: day, evening, night")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "total_nurses": 8,
+                "total_doctors": 2,
+                "available_nurses": 5,
+                "available_doctors": 1,
+                "shift_type": "day"
+            }
+        }
+
+
+class HospitalResources(BaseModel):
+    """Model for hospital resource data."""
+    
+    total_beds: int = Field(..., description="Total available beds", ge=0)
+    occupied_beds: int = Field(..., description="Currently occupied beds", ge=0)
+    available_beds: int = Field(..., description="Currently available beds", ge=0)
+    critical_care_beds: int = Field(default=0, description="ICU/Critical care beds", ge=0)
+    general_beds: int = Field(default=0, description="General ward beds", ge=0)
+    observation_beds: int = Field(default=0, description="Observation/triage beds", ge=0)
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "total_beds": 50,
+                "occupied_beds": 42,
+                "available_beds": 8,
+                "critical_care_beds": 10,
+                "general_beds": 30,
+                "observation_beds": 10
+            }
+        }
+
+
+class HospitalContext(BaseModel):
+    """Complete hospital context for analysis."""
+    
+    staffing: HospitalStaffing = Field(..., description="Current staffing information")
+    resources: HospitalResources = Field(..., description="Current resource availability")
+    area_sqm: float = Field(default=100.0, description="Area being monitored in square meters", ge=10.0)
+    location_name: str = Field(default="Waiting Area", description="Location/area name (e.g., ER, Triage, ICU)")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "staffing": {
+                    "total_nurses": 8,
+                    "total_doctors": 2,
+                    "available_nurses": 5,
+                    "available_doctors": 1,
+                    "shift_type": "day"
+                },
+                "resources": {
+                    "total_beds": 50,
+                    "occupied_beds": 42,
+                    "available_beds": 8,
+                    "critical_care_beds": 10,
+                    "general_beds": 30,
+                    "observation_beds": 10
+                },
+                "area_sqm": 150.0,
+                "location_name": "Emergency Room Waiting Area"
+            }
+        }
+
+
 class AnalysisRequest(BaseModel):
     """Request model for starting video analysis."""
     
@@ -111,6 +187,7 @@ class AnalysisRequest(BaseModel):
     confidence_threshold: float = Field(default=0.5, ge=0.0, le=1.0, description="Detection confidence threshold")
     enable_ai_insights: bool = Field(default=True, description="Enable AI-powered insights using Google Gemini")
     gemini_api_key: Optional[str] = Field(default=None, description="Google Gemini API key (optional, can use env var)")
+    hospital_context: Optional[HospitalContext] = Field(default=None, description="Current hospital staffing and resource data")
     
     class Config:
         json_schema_extra = {
@@ -120,7 +197,23 @@ class AnalysisRequest(BaseModel):
                 "save_annotated_video": True,
                 "frame_sample_rate": 1,
                 "confidence_threshold": 0.5,
-                "enable_ai_insights": True
+                "enable_ai_insights": True,
+                "hospital_context": {
+                    "staffing": {
+                        "total_nurses": 8,
+                        "total_doctors": 2,
+                        "available_nurses": 5,
+                        "available_doctors": 1,
+                        "shift_type": "day"
+                    },
+                    "resources": {
+                        "total_beds": 50,
+                        "occupied_beds": 42,
+                        "available_beds": 8
+                    },
+                    "area_sqm": 150.0,
+                    "location_name": "Emergency Room"
+                }
             }
         }
 

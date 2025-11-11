@@ -1,6 +1,7 @@
 """
-Integration Tests - Phase 8
+Integration Tests - Phase 8 & 9
 Tests complete workflows across multiple services and API endpoints
+Includes hospital context analytics integration tests
 """
 
 import sys
@@ -537,6 +538,357 @@ class IntegrationTestSuite:
             self.record_test("Filtering and Sorting", False, str(e))
             return False
     
+    def test_hospital_context_analytics(self) -> bool:
+        """
+        Test 7: Hospital context analytics integration
+        Tests: Hospital data acceptance, analytics calculation, output structure
+        """
+        print_section("Test 7: Hospital Context Analytics")
+        
+        if not TEST_VIDEO_PATH.exists():
+            print_result("Hospital Context Analytics", False, "Test video not found")
+            self.record_test("Hospital Context Analytics", False, "Test video missing")
+            return False
+        
+        try:
+            # Step 1: Upload video
+            print("Step 1: Uploading video for hospital analytics test...")
+            with open(TEST_VIDEO_PATH, 'rb') as f:
+                files = {'file': (TEST_VIDEO, f, 'video/mp4')}
+                upload_response = requests.post(f"{API_URL}/upload", files=files)
+            
+            if upload_response.status_code != 201:
+                print_result("Upload", False, f"Status: {upload_response.status_code}")
+                self.record_test("Hospital Context Analytics - Upload", False)
+                return False
+            
+            video_id = upload_response.json()['id']
+            print_result("Upload", True, f"Video ID: {video_id}")
+            time.sleep(1)
+            
+            # Step 2: Create hospital context
+            print("\nStep 2: Creating hospital context...")
+            hospital_context = {
+                "staffing": {
+                    "total_nurses": 10,
+                    "total_doctors": 5,
+                    "available_nurses": 8,
+                    "available_doctors": 4,
+                    "shift_type": "Day"
+                },
+                "resources": {
+                    "total_beds": 50,
+                    "occupied_beds": 35,
+                    "available_beds": 15,
+                    "critical_care_beds": 10,
+                    "general_beds": 30,
+                    "observation_beds": 10
+                },
+                "area_sqm": 500,
+                "location_name": "Emergency Room"
+            }
+            
+            print_result("Hospital Context", True, 
+                        f"Staffing: {hospital_context['staffing']['available_nurses']} nurses, "
+                        f"Resources: {hospital_context['resources']['available_beds']} beds")
+            print(f"   Hospital context: {json.dumps(hospital_context, indent=2)}")
+            
+            # Step 3: Analyze with hospital context
+            print("\nStep 3: Analyzing with hospital context...")
+            analyze_payload = {
+                "upload_id": video_id,
+                "show_visual": False,
+                "save_annotated_video": False,
+                "frame_sample_rate": 30,
+                "confidence_threshold": 0.5,
+                "enable_ai_insights": True,
+                "gemini_api_key": os.getenv('GEMINI_API_KEY', ''),
+                "hospital_context": hospital_context
+            }
+            print(f"   📤 Sending payload: {json.dumps(analyze_payload, indent=2)}")
+            
+            analyze_response = requests.post(
+                f"{API_URL}/analyze/{video_id}",
+                json=analyze_payload
+            )
+            
+            if analyze_response.status_code != 200:
+                print_result("Analysis with Context", False, f"Status: {analyze_response.status_code}")
+                print(f"   Response: {analyze_response.text}")
+                self.record_test("Hospital Context Analytics - Analysis", False)
+                return False
+            
+            analysis_response_data = analyze_response.json()
+            analysis_id = analysis_response_data['analysis_id']
+            print_result("Analysis Started", True, f"Analysis ID: {analysis_id}")
+            print(f"   Full response: {json.dumps(analysis_response_data, indent=2)}")
+            
+            # Step 4: Wait for analysis and check hospital analytics in results
+            print("\nStep 4: Waiting for analysis to include hospital analytics...")
+            max_wait = 120
+            start_wait = time.time()
+            analysis_complete = False
+            hospital_analytics_present = False
+            
+            while time.time() - start_wait < max_wait:
+                status_response = requests.get(f"{API_URL}/analyze/status/{analysis_id}")
+                if status_response.status_code == 200:
+                    status_data = status_response.json()
+                    status = status_data.get('status')
+                    progress = status_data.get('progress', 0)
+                    
+                    print(f"   Progress: {progress}% - Status: {status}")
+                    
+                    if status == 'completed':
+                        analysis_complete = True
+                        analysis_result = status_data.get('result', {})
+                        
+                        # DEBUG: Log the structure of results
+                        print(f"   📊 Status response result type: {type(analysis_result)}")
+                        print(f"   📊 Status response result keys: {list(analysis_result.keys()) if isinstance(analysis_result, dict) else 'Not a dict'}")
+                        
+                        # Check for hospital_analytics in results
+                        hospital_analytics = analysis_result.get('results', {}).get('hospital_analytics')
+                        if hospital_analytics:
+                            hospital_analytics_present = True
+                            print_result("Hospital Analytics Present", True, 
+                                        "hospital_analytics field found in results")
+                        else:
+                            print(f"   ⚠️  hospital_analytics not found in status result")
+                            print(f"   Available in results: {list(analysis_result.get('results', {}).keys())}")
+                        break
+                    elif status == 'failed':
+                        print_result("Analysis", False, status_data.get('message', 'Unknown error'))
+                        print(f"   Status data: {json.dumps(status_data, indent=2)}")
+                        self.record_test("Hospital Context Analytics", False, "Analysis failed")
+                        return False
+                
+                time.sleep(5)
+            
+            if not analysis_complete:
+                print_result("Analysis", False, "Timeout waiting for analysis")
+                self.record_test("Hospital Context Analytics", False, "Timeout")
+                return False
+            
+            # Step 5: Retrieve and validate hospital analytics
+            print("\nStep 5: Validating hospital analytics structure...")
+            result_response = requests.get(f"{API_URL}/results/{analysis_id}")
+            
+            if result_response.status_code != 200:
+                print_result("Get Result", False, f"Status: {result_response.status_code}")
+                self.record_test("Hospital Context Analytics - Result", False)
+                return False
+            
+            result_data = result_response.json()
+            hospital_analytics = result_data.get('results', {}).get('hospital_analytics', {})
+            
+            # DEBUG: Print full hospital_analytics structure
+            print("\n📊 DEBUG: Full Hospital Analytics Structure")
+            print(f"   Result data keys: {list(result_data.keys())}")
+            print(f"   Results keys: {list(result_data.get('results', {}).keys())}")
+            print(f"   hospital_analytics type: {type(hospital_analytics)}")
+            print(f"   hospital_analytics: {json.dumps(hospital_analytics, indent=2, default=str)}")
+            print(f"   hospital_analytics keys: {list(hospital_analytics.keys())}")
+            
+            # Validate hospital analytics structure
+            validation_checks = {
+                "Has staffing_analysis": 'staffing_analysis' in hospital_analytics,
+                "Has bed_analysis": 'bed_analysis' in hospital_analytics,
+                "Has capacity_score": 'capacity_score' in hospital_analytics,
+                "Has critical_alerts": 'critical_alerts' in hospital_analytics
+            }
+            
+            # Validate staffing analysis
+            if 'staffing_analysis' in hospital_analytics:
+                staffing = hospital_analytics['staffing_analysis']
+                validation_checks.update({
+                    "Staffing - recommended_nurses": 'recommended_nurses' in staffing,
+                    "Staffing - wait_time": 'predicted_wait_time_minutes' in staffing,
+                    "Staffing - probability": 'probability_waiting' in staffing,
+                    "Staffing - algorithm": 'algorithm' in staffing
+                })
+                
+                print_result("Staffing Analysis", all(v for k, v in validation_checks.items() if 'Staffing' in k),
+                            f"Recommended: {staffing.get('recommended_nurses')} nurses, "
+                            f"Wait time: {staffing.get('predicted_wait_time_minutes', 0):.1f} min")
+            
+            # Validate bed analysis
+            print("\n🔍 DEBUG: Bed Analysis Inspection")
+            print(f"   hospital_analytics keys: {list(hospital_analytics.keys())}")
+            print(f"   'bed_analysis' in hospital_analytics: {'bed_analysis' in hospital_analytics}")
+            
+            if 'bed_analysis' in hospital_analytics:
+                bed_analysis = hospital_analytics['bed_analysis']
+                print(f"   bed_analysis type: {type(bed_analysis)}")
+                print(f"   bed_analysis keys: {list(bed_analysis.keys()) if isinstance(bed_analysis, dict) else 'N/A'}")
+                print(f"   bed_analysis content: {json.dumps(bed_analysis, indent=4)}")
+                
+                # Log all fields
+                print(f"\n   Detailed Bed Analysis Fields:")
+                print(f"     - occupancy_rate: {bed_analysis.get('occupancy_rate', 'MISSING')}")
+                print(f"     - current_occupancy_rate: {bed_analysis.get('current_occupancy_rate', 'MISSING')}")
+                print(f"     - additional_capacity_needed: {bed_analysis.get('additional_capacity_needed', 'MISSING')}")
+                print(f"     - type: {bed_analysis.get('type', 'MISSING')}")
+                print(f"     - total_beds: {bed_analysis.get('total_beds', 'MISSING')}")
+                print(f"     - occupied_beds: {bed_analysis.get('occupied_beds', 'MISSING')}")
+                print(f"     - available_beds: {bed_analysis.get('available_beds', 'MISSING')}")
+                
+                # Use the actual field names from backend
+                occupancy_rate = bed_analysis.get('current_occupancy_rate', 0)
+                additional_capacity = bed_analysis.get('additional_capacity_needed', 0)
+                
+                validation_checks.update({
+                    "Bed - occupancy": bed_analysis.get('current_occupancy_rate') is not None,
+                    "Bed - shortage": 'additional_capacity_needed' in bed_analysis
+                })
+                
+                bed_checks_passed = all(v for k, v in validation_checks.items() if 'Bed' in k)
+                
+                print(f"\n   Bed Analysis Validation:")
+                print(f"     - Checks passed: {bed_checks_passed}")
+                print(f"     - Occupancy value: {occupancy_rate} (type: {type(occupancy_rate).__name__})")
+                print(f"     - Shortage value: {additional_capacity} (type: {type(additional_capacity).__name__})")
+                print(f"     - Occupancy percentage: {occupancy_rate * 100:.1f}%")
+                
+                print_result("Bed Analysis", bed_checks_passed,
+                            f"Occupancy: {occupancy_rate * 100:.1f}%, "
+                            f"Shortage: {additional_capacity} beds")
+            else:
+                print(f"   ❌ bed_analysis NOT FOUND in hospital_analytics")
+                print(f"   Available keys: {list(hospital_analytics.keys())}")
+                validation_checks.update({
+                    "Bed - occupancy": False,
+                    "Bed - shortage": False
+                })
+                print_result("Bed Analysis", False, "bed_analysis key missing from hospital_analytics")
+            
+            # Validate capacity score
+            capacity_score = hospital_analytics.get('capacity_score', -1)
+            if 0 <= capacity_score <= 100:
+                validation_checks["Capacity score valid"] = True
+                print_result("Capacity Score", True, f"Score: {capacity_score:.1f}/100")
+            else:
+                validation_checks["Capacity score valid"] = False
+                print_result("Capacity Score", False, f"Invalid score: {capacity_score}")
+            
+            # Validate alerts
+            critical_alerts = hospital_analytics.get('critical_alerts', [])
+            validation_checks["Has alerts list"] = isinstance(critical_alerts, list)
+            print_result("Critical Alerts", True, f"Count: {len(critical_alerts)}")
+            
+            all_passed = all(validation_checks.values())
+            
+            print(f"\nValidation Results:")
+            for check, passed in validation_checks.items():
+                status = "✓" if passed else "✗"
+                print(f"   {status} {check}")
+            
+            self.record_test("Hospital Context Analytics", all_passed,
+                           f"{sum(validation_checks.values())}/{len(validation_checks)} checks passed")
+            
+            return all_passed
+            
+        except Exception as e:
+            print_result("Hospital Context Analytics", False, f"Error: {e}")
+            self.record_test("Hospital Context Analytics", False, str(e))
+            return False
+    
+    def test_hospital_context_without_context(self) -> bool:
+        """
+        Test 8: Backward compatibility - analysis without hospital context
+        Tests: System works without hospital_context (backward compatible)
+        """
+        print_section("Test 8: Backward Compatibility (No Hospital Context)")
+        
+        if not TEST_VIDEO_PATH.exists():
+            print_result("Backward Compatibility", False, "Test video not found")
+            self.record_test("Backward Compatibility", False, "Test video missing")
+            return False
+        
+        try:
+            # Upload video
+            print("Uploading video for backward compatibility test...")
+            with open(TEST_VIDEO_PATH, 'rb') as f:
+                files = {'file': (TEST_VIDEO, f, 'video/mp4')}
+                upload_response = requests.post(f"{API_URL}/upload", files=files)
+            
+            if upload_response.status_code != 201:
+                print_result("Upload", False, f"Status: {upload_response.status_code}")
+                return False
+            
+            video_id = upload_response.json()['id']
+            time.sleep(1)
+            
+            # Analyze WITHOUT hospital context (old way)
+            print("Analyzing WITHOUT hospital context...")
+            analyze_response = requests.post(
+                f"{API_URL}/analyze/{video_id}",
+                json={
+                    "upload_id": video_id,
+                    "show_visual": False,
+                    "save_annotated_video": False,
+                    "frame_sample_rate": 30,
+                    "confidence_threshold": 0.5,
+                    "enable_ai_insights": False
+                }
+            )
+            
+            if analyze_response.status_code != 200:
+                print_result("Analysis without context", False, f"Status: {analyze_response.status_code}")
+                self.record_test("Backward Compatibility", False)
+                return False
+            
+            analysis_id = analyze_response.json()['analysis_id']
+            
+            # Wait for completion
+            print("Waiting for analysis...")
+            max_wait = 120
+            start_wait = time.time()
+            
+            while time.time() - start_wait < max_wait:
+                status_response = requests.get(f"{API_URL}/analyze/status/{analysis_id}")
+                if status_response.status_code == 200:
+                    status_data = status_response.json()
+                    status = status_data.get('status')
+                    
+                    if status in ['completed', 'failed']:
+                        break
+                
+                time.sleep(5)
+            
+            # Verify results exist (with or without hospital_analytics)
+            result_response = requests.get(f"{API_URL}/results/{analysis_id}")
+            
+            if result_response.status_code != 200:
+                print_result("Backward Compatibility", False, "Cannot retrieve results")
+                self.record_test("Backward Compatibility", False)
+                return False
+            
+            result_data = result_response.json()
+            has_results = 'results' in result_data
+            
+            # Check what's present
+            hospital_analytics = result_data.get('results', {}).get('hospital_analytics')
+            
+            checks = {
+                "Has results": has_results,
+                "Results is not empty": len(result_data.get('results', {})) > 0,
+                "System works without context": True  # If we got here, it works
+            }
+            
+            all_passed = all(checks.values())
+            
+            details = f"Results present, Hospital analytics: {'present' if hospital_analytics else 'not present (expected)'}"
+            print_result("Backward Compatibility", all_passed, details)
+            
+            self.record_test("Backward Compatibility", all_passed)
+            return all_passed
+            
+        except Exception as e:
+            print_result("Backward Compatibility", False, f"Error: {e}")
+            self.record_test("Backward Compatibility", False, str(e))
+            return False
+    
     def run_all_tests(self):
         """Run complete test suite"""
         print("\n" + "="*80)
@@ -558,6 +910,8 @@ class IntegrationTestSuite:
         self.test_error_handling()
         self.test_pagination()
         self.test_filtering_sorting()
+        self.test_hospital_context_analytics()
+        self.test_hospital_context_without_context()
         
         # Summary
         print_section("TEST SUMMARY")

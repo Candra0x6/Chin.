@@ -33,7 +33,8 @@ def get_analysis_service(
     frame_sample_rate: int = 30,
     confidence_threshold: float = 0.5,
     enable_ai_insights: bool = True,
-    gemini_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None,
+    hospital_context: Optional[Dict] = None
 ) -> VideoAnalysisService:
     """
     Get or create the video analysis service instance with specified configuration.
@@ -46,6 +47,7 @@ def get_analysis_service(
         confidence_threshold: Detection confidence threshold
         enable_ai_insights: Enable AI-powered insights generation
         gemini_api_key: Google Gemini API key (optional, can use env var)
+        hospital_context: Hospital staffing and resource data
     """
     # Create new service with specified configuration
     service = VideoAnalysisService(
@@ -56,10 +58,11 @@ def get_analysis_service(
         save_annotated_video=save_annotated_video,
         output_video_path=output_video_path,
         enable_ai_insights=enable_ai_insights,
-        gemini_api_key=gemini_api_key
+        gemini_api_key=gemini_api_key,
+        hospital_context=hospital_context
     )
     
-    logger.info(f"Video analysis service created (visual={show_visual}, save={save_annotated_video}, ai={enable_ai_insights})")
+    logger.info(f"Video analysis service created (visual={show_visual}, save={save_annotated_video}, ai={enable_ai_insights}, hospital_context={'Yes' if hospital_context else 'No'})")
     return service
 
 
@@ -72,7 +75,8 @@ async def run_video_analysis(
     frame_sample_rate: int = 30,
     confidence_threshold: float = 0.5,
     enable_ai_insights: bool = True,
-    gemini_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None,
+    hospital_context: Optional[Dict] = None
 ):
     """
     Background task to run video analysis.
@@ -83,6 +87,11 @@ async def run_video_analysis(
         video_path: Path to video file
         show_visual: Show real-time visual display
         save_annotated_video: Save annotated video to file
+        frame_sample_rate: Process every Nth frame
+        confidence_threshold: Detection confidence threshold
+        enable_ai_insights: Enable AI-powered insights
+        gemini_api_key: Gemini API key (optional)
+        hospital_context: Hospital staffing and resource data
         frame_sample_rate: Process every Nth frame
         confidence_threshold: Detection confidence threshold
         enable_ai_insights: Enable AI-powered insights
@@ -121,7 +130,8 @@ async def run_video_analysis(
             frame_sample_rate=frame_sample_rate,
             confidence_threshold=confidence_threshold,
             enable_ai_insights=enable_ai_insights,
-            gemini_api_key=gemini_api_key
+            gemini_api_key=gemini_api_key,
+            hospital_context=hospital_context
         )
         results = service.analyze_video(
             video_path=video_path,
@@ -302,7 +312,7 @@ async def start_analysis(
             "save_annotated": request.save_annotated_video
         }
         
-        # Start background task with visual options
+        # Start background task with visual options and hospital context
         background_tasks.add_task(
             run_video_analysis,
             video_id=video_id,
@@ -313,10 +323,11 @@ async def start_analysis(
             frame_sample_rate=request.frame_sample_rate,
             confidence_threshold=request.confidence_threshold,
             enable_ai_insights=request.enable_ai_insights,
-            gemini_api_key=request.gemini_api_key
+            gemini_api_key=request.gemini_api_key,
+            hospital_context=request.hospital_context.dict() if request.hospital_context else None
         )
         
-        logger.info(f"Analysis started for video {video_id}: {analysis_id} (visual={request.show_visual}, ai={request.enable_ai_insights})")
+        logger.info(f"Analysis started for video {video_id}: {analysis_id} (visual={request.show_visual}, ai={request.enable_ai_insights}, hospital_context={'Yes' if request.hospital_context else 'No'})")
         
         message = "Video analysis started. Use /analyze/status/{analysis_id} to check progress."
         if request.show_visual:

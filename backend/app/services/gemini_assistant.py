@@ -35,7 +35,8 @@ class GeminiAssistant:
         api_key: Optional[str] = None,
         model_name: str = "gemini-1.5-flash",
         temperature: float = 0.7,
-        max_output_tokens: int = 2048
+        max_output_tokens: int = 2048,
+        hospital_context: Optional[Dict] = None
     ):
         """
         Initialize the GeminiAssistant.
@@ -45,11 +46,13 @@ class GeminiAssistant:
             model_name: Gemini model to use (gemini-1.5-flash, gemini-1.5-pro)
             temperature: Response creativity (0.0-1.0)
             max_output_tokens: Maximum response length
+            hospital_context: Hospital staffing and resource data
         """
         self.api_key = api_key
         self.model_name = model_name
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
+        self.hospital_context = hospital_context or {}
         self.model = None
         
         # Initialize Gemini if available
@@ -161,7 +164,7 @@ class GeminiAssistant:
         video_meta: Dict,
         include_recommendations: bool
     ) -> str:
-        """Build comprehensive prompt for Gemini."""
+        """Build comprehensive prompt for Gemini with hospital context."""
         
         # Extract enhanced analytics data
         density = enhanced.get("crowd_density", {})
@@ -169,15 +172,40 @@ class GeminiAssistant:
         spatial = enhanced.get("spatial_distribution", {})
         flow = enhanced.get("flow_metrics", {})
         
-        prompt = f"""You are an expert healthcare operations analyst specializing in emergency room flow optimization. 
-Analyze the following hospital waiting area video analysis results and provide actionable insights.
+        # Extract hospital context
+        staffing = self.hospital_context.get("staffing", {})
+        resources = self.hospital_context.get("resources", {})
+        location = self.hospital_context.get("location_name", "Hospital Area")
+        area_sqm = self.hospital_context.get("area_sqm", 100)
+        
+        prompt = f"""You are an expert healthcare operations analyst specializing in emergency room and hospital waiting area flow optimization. 
+Analyze the following video analysis results combined with real-time hospital resource data and provide actionable insights.
+
+HOSPITAL LOCATION & CONTEXT:
+- Location: {location}
+- Area being monitored: {area_sqm} square meters
+- Analysis Date: {video_meta.get('created_at', 'N/A')}
 
 VIDEO INFORMATION:
 - Duration: {video_meta.get('duration_formatted', 'N/A')}
 - Resolution: {video_meta.get('width', 0)}x{video_meta.get('height', 0)}
 - Total frames analyzed: {stats.get('frames_analyzed', 0)}
 
-CROWD STATISTICS:
+HOSPITAL STAFFING STATUS (Real-time):
+- Total Nurses on Duty: {staffing.get('total_nurses', 'N/A')}
+- Currently Available Nurses: {staffing.get('available_nurses', 'N/A')}
+- Total Doctors on Duty: {staffing.get('total_doctors', 'N/A')}
+- Currently Available Doctors: {staffing.get('available_doctors', 'N/A')}
+- Shift Type: {staffing.get('shift_type', 'N/A')}
+
+HOSPITAL RESOURCES STATUS (Real-time):
+- Total Beds: {resources.get('total_beds', 'N/A')}
+- Occupied Beds: {resources.get('occupied_beds', 'N/A')}
+- Available Beds: {resources.get('available_beds', 'N/A')}
+- Critical Care Beds: {resources.get('critical_care_beds', 'N/A')}
+- General Beds: {resources.get('general_beds', 'N/A')}
+
+CROWD DETECTION STATISTICS:
 - Average people count: {stats.get('average_person_count', 0):.1f}
 - Peak people count: {stats.get('max_person_count', 0)}
 - Minimum people count: {stats.get('min_person_count', 0)}
@@ -191,6 +219,7 @@ CROWD DENSITY ANALYSIS:
 BOTTLENECK ANALYSIS:
 - Bottlenecks detected: {bottlenecks.get('bottlenecks_detected', 0)}
 - Threshold used: {bottlenecks.get('threshold_used', 0):.1f} people
+- Total bottleneck duration: {bottlenecks.get('total_bottleneck_duration_seconds', 0):.1f} seconds
 """
 
         # Add bottleneck periods if available
@@ -223,19 +252,28 @@ CURRENT ASSESSMENT:
 
         if include_recommendations:
             prompt += f"""
-Please provide:
-1. **Executive Summary** (2-3 sentences): Overall assessment of the situation
+RESOURCE CONSTRAINTS & CONSIDERATIONS:
+- Current available nurses: {staffing.get('available_nurses', 'N/A')} out of {staffing.get('total_nurses', 'N/A')}
+- Current available beds: {resources.get('available_beds', 'N/A')} out of {resources.get('total_beds', 'N/A')}
+- Estimated waiting patients: {stats.get('average_person_count', 0):.1f}
+
+Please provide recommendations CONSIDERING CURRENT HOSPITAL CAPACITY:
+1. **Executive Summary** (2-3 sentences): Overall assessment of the situation RELATIVE TO current staffing and bed availability
 2. **Key Findings** (3-5 bullet points): Most important observations
 3. **Bottleneck Areas**: Specific locations or times requiring attention
 4. **Staff Recommendations**: 
-   - Current suggestion: {insights.get('suggested_nurses', 0)} nurse(s)
-   - Provide detailed reasoning for staffing levels
-   - Consider peak times and bottleneck periods
-5. **Priority Actions** (numbered list): Immediate steps to improve flow
-6. **Long-term Recommendations**: Operational improvements
+   - IMPORTANT: Consider current staff availability: {staffing.get('available_nurses', 'N/A')} nurses currently available
+   - Provide specific recommendations based on detected crowd vs available staff
+   - Include realistic assessments given hospital constraints
+5. **Bed Capacity Assessment**:
+   - Current situation: {resources.get('available_beds', 'N/A')} beds available for {stats.get('average_person_count', 0):.1f} waiting patients
+   - Provide capacity recommendations
+6. **Priority Actions** (numbered list): Immediate steps to improve flow WITH CURRENT RESOURCES
+7. **Resource Requests** (if needed): What additional staff or beds would optimize operations
 
 Format your response clearly with these sections. Be specific, actionable, and data-driven.
 Focus on practical recommendations that hospital administrators can implement immediately.
+Consider the reality of current staffing and bed availability - don't recommend unrealistic resource levels.
 """
         else:
             prompt += """
