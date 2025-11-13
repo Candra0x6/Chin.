@@ -16,6 +16,7 @@ from .video_processor import VideoProcessor
 from .person_detector import PersonDetector, DetectionStats
 from .analytics import CrowdAnalytics
 from .gemini_assistant import GeminiAssistant
+from .hospital_analytics import HospitalAnalytics
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,8 @@ class VideoAnalysisService:
         save_annotated_video: bool = False,  # Save video with bounding boxes
         output_video_path: Optional[Path] = None,  # Path for annotated video
         enable_ai_insights: bool = True,  # Enable AI insights generation
-        gemini_api_key: Optional[str] = None  # Gemini API key (or from env)
+        gemini_api_key: Optional[str] = None,  # Gemini API key (or from env)
+        hospital_context: Optional[Dict] = None  # Hospital staffing and resource data
     ):
         """
         Initialize the VideoAnalysisService.
@@ -55,6 +57,7 @@ class VideoAnalysisService:
             output_video_path: Path to save annotated video
             enable_ai_insights: Enable AI-powered insights generation
             gemini_api_key: Google Gemini API key (or load from GEMINI_API_KEY env var)
+            hospital_context: Hospital staffing and resource data for context-aware analysis
         """
         self.video_processor = VideoProcessor(
             frame_sample_rate=frame_sample_rate,
@@ -67,6 +70,8 @@ class VideoAnalysisService:
         )
         
         self.analytics = CrowdAnalytics()
+        self.hospital_analytics = HospitalAnalytics()
+        self.hospital_context = hospital_context or {}
         
         # Visual display settings
         self.show_visual = show_visual
@@ -87,7 +92,8 @@ class VideoAnalysisService:
                 api_key=api_key,
                 model_name=os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
                 temperature=float(os.getenv("GEMINI_TEMPERATURE", "0.7")),
-                max_output_tokens=int(os.getenv("GEMINI_MAX_TOKENS", "2048"))
+                max_output_tokens=int(os.getenv("GEMINI_MAX_TOKENS", "2048")),
+                hospital_context=self.hospital_context  # Pass hospital context to Gemini
             )
             
             logger.info(f"AI insights enabled: {self.gemini_assistant.get_model_info()['mode']}")
@@ -177,20 +183,36 @@ class VideoAnalysisService:
                 "timeline": self._generate_timeline(frames_data, detections)
             }
             
-           
-            
             # Add insights
             results["insights"] = self._generate_insights(results)
             
-            # Add Phase 4: Enhanced analytics (90-95%)
+            # Add Phase 4: Enhanced analytics (85-90%)
             if progress_callback:
-                progress_callback(92, 100, "Generating enhanced analytics...")
+                progress_callback(85, 100, "Generating enhanced analytics...")
             
             results["enhanced_analytics"] = self.analytics.generate_comprehensive_report(
                 detections, frames_data, metadata
             )
             
-            # Phase 5: AI-powered insights (95-98%)
+            # Add Phase 4.5: Hospital Context Analytics (90-93%)
+            if self.hospital_context:
+                if progress_callback:
+                    progress_callback(90, 100, "Analyzing hospital resource context...")
+                
+                try:
+                    hospital_metrics = self.hospital_analytics.calculate_comprehensive_hospital_metrics(
+                        statistics['average_person_count'],
+                        statistics['max_person_count'],
+                        metadata['duration_seconds'] / 60,  # Convert to minutes
+                        self.hospital_context
+                    )
+                    results["hospital_analytics"] = hospital_metrics
+                    logger.info(f"Hospital analytics generated: {hospital_metrics.get('overall_status', 'N/A')}")
+                except Exception as e:
+                    logger.error(f"Error generating hospital analytics: {e}")
+                    results["hospital_analytics"] = {"error": "Hospital analytics failed", "message": str(e)}
+            
+            # Phase 5: AI-powered insights (93-98%)
             if self.enable_ai_insights and self.gemini_assistant:
                 if progress_callback:
                     progress_callback(95, 100, "Generating AI insights...")
