@@ -7,6 +7,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { useHospitalStore } from '@/lib/stores/hospitalStore';
 
 export interface HospitalContext {
   staffing: {
@@ -265,6 +266,21 @@ export function HospitalContextForm({
 
       logDebug('Form validation passed - submitting', formData);
       console.log('[HospitalContextForm] Final submission data:', JSON.stringify(formData, null, 2));
+      
+      // Store hospital context data in Zustand store
+      useHospitalStore.setState({
+        availableBeds: formData.resources.available_beds,
+        availableNurses: formData.staffing.available_nurses,
+      });
+
+      localStorage.setItem('available_beds', formData.resources.total_beds.toString());
+      localStorage.setItem('available_nurses', formData.resources.available_beds.toString());
+      
+      logDebug('Hospital context stored in Zustand store', {
+        availableBeds: formData.resources.available_beds,
+        availableNurses: formData.staffing.available_nurses,
+      });
+      
       onSubmit(formData);
     },
     [formData, validateForm, onSubmit]

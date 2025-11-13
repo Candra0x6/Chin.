@@ -20,6 +20,7 @@ import {
   PerformanceMonitor,
   type PerformanceMetrics
 } from '../lib/performanceMonitor';
+import { useHospitalStore } from '@/lib/stores/hospitalStore';
 
 /**
  * ThreeScene Component - Phases 2, 3, 4, 5, 6, 7, 8, 9 & 10
@@ -96,6 +97,8 @@ import {
  * - Performance thresholds and warnings
  */
 export default function ThreeScene() {
+    const { peakCount, availableBeds, availableNurses } = useHospitalStore();
+  
   // Refs to store Three.js objects
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -128,9 +131,10 @@ export default function ThreeScene() {
     // 1. SCENE INITIALIZATION
     // ==========================================
     const scene = new THREE.Scene();
-    // Set dark gray background (#303030)
-    scene.background = new THREE.Color(0x303030);
+    // Transparant background #1F2937
+    scene.background = new THREE.Color(0x1F2937);
     sceneRef.current = scene;
+    
 
     // ==========================================
     // 2. CAMERA SETUP
@@ -243,7 +247,11 @@ export default function ThreeScene() {
     // ==========================================
     // Load all 3D objects asynchronously
     // This includes: beds, patients, and staff figures from 3D models
-    createAllSceneObjects(10, 10, 4).then((sceneObjects) => {
+    const availableBeds = localStorage.getItem('available_beds')
+    const availableNurses = localStorage.getItem('available_nurses')
+    const peakCount = localStorage.getItem('peak_count')
+
+    createAllSceneObjects(Number(availableBeds), Number(availableNurses), Number(peakCount)).then((sceneObjects) => {
       scene.add(sceneObjects);
       
       // Extract patient meshes for animation

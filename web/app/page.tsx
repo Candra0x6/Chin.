@@ -2,12 +2,15 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadBox, Loader, ThemeToggle, KeyboardShortcuts, KeyboardShortcutsModal, HospitalContextForm } from '@/components';
 import { useToast } from '@/contexts';
 import { useApp } from '@/contexts';
 import { analyzeVideo } from '@/lib/api';
 import type { VideoUploadResponse } from '@/lib/types';
-import type { HospitalContext } from '@/components';
+import { type HospitalContext } from '@/components';
+import Loader from '@/components/Loader';
+import ThemeToggle from '@/components/ThemeToggle';
+import UploadBox from '@/components/UploadBox';
+import HospitalContextForm from '@/components/HospitalContextForm';
 
 export default function Home() {
   const router = useRouter();
@@ -73,10 +76,12 @@ export default function Home() {
         status: 'processing',
       });
 
+      
       toast.success('Analysis started with hospital context!');
       setTimeout(() => {
         logDebug('Navigating to analysis page', { analysisId: analysisResult.analysis_id });
-        router.push(`/analysis/${analysisResult.analysis_id}`);
+        localStorage.setItem('analysisId', analysisResult.analysis_id);
+        router.push(`/dashboard`);
       }, 500);
     } catch (error) {
       logDebug('Failed to start analysis', { error: error instanceof Error ? error.message : 'Unknown error' });
@@ -109,17 +114,7 @@ export default function Home() {
   if (showHospitalForm && uploadedResult) {
     return (
       <>
-        <KeyboardShortcuts
-          onUpload={scrollToUpload}
-          onHistory={() => router.push('/history')}
-          onHelp={() => setShowShortcuts(true)}
-        />
-        
-        <KeyboardShortcutsModal
-          isOpen={showShortcuts}
-          onClose={() => setShowShortcuts(false)}
-        />
-
+    
         <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
           <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-300">
             <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -153,17 +148,7 @@ export default function Home() {
 
   return (
     <>
-      <KeyboardShortcuts
-        onUpload={scrollToUpload}
-        onHistory={() => router.push('/history')}
-        onHelp={() => setShowShortcuts(true)}
-      />
-      
-      <KeyboardShortcutsModal
-        isOpen={showShortcuts}
-        onClose={() => setShowShortcuts(false)}
-      />
-      
+  
       <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
       {/* Header */}
       <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-300">
@@ -185,6 +170,12 @@ export default function Home() {
               >
                 ⌨️ Shortcuts
               </button>
+              <a
+                href="/dashboard"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              >
+                🏠 Dashboard
+              </a>
               <a
                 href="/history"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"

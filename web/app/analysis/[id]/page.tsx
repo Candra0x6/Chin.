@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ResultPanel, Loader, InlineLoader } from '@/components';
 import { getAnalysisResult, getAnalysisStatus } from '@/lib/api';
 import type { AnalysisResults, AnalysisStatus } from '@/lib/types';
-import type { HospitalAnalytics } from '@/components/ResultPanel';
+import { ResultPanel, type HospitalAnalytics } from '@/components/ResultPanel';
+import Loader, { InlineLoader } from '@/components/Loader';
 
 export default function AnalysisPage() {
   const router = useRouter();

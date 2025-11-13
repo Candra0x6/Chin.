@@ -10,6 +10,10 @@ import { startChat, sendChatMessage } from '@/lib/api';
 import { validateChatMessage } from '@/lib/validators';
 import { InlineLoader } from './Loader';
 import type { ChatMessage, ChatStartResponse } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 export interface ChatAssistantProps {
   /** Analysis ID to discuss */
@@ -31,11 +35,12 @@ function MessageBubble({ message }: { message: ChatMessage }): React.ReactElemen
       <div className={`flex items-start gap-3 max-w-[80%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar */}
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+          className={cn(
+            'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
             isUser
               ? 'bg-blue-600 text-white'
               : 'bg-purple-600 text-white'
-          }`}
+          )}
         >
           {isUser ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,28 +64,32 @@ function MessageBubble({ message }: { message: ChatMessage }): React.ReactElemen
         </div>
 
         {/* Message content */}
-        <div
-          className={`px-4 py-3 rounded-lg ${
+        <Card
+          className={cn(
+            'py-0',
             isUser
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-          }`}
-        >
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">
-            {message.content}
-          </p>
-          {message.timestamp && (
-            <p
-              className={`text-xs mt-2 ${
-                isUser
-                  ? 'text-blue-100'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              {new Date(message.timestamp).toLocaleTimeString()}
-            </p>
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-muted'
           )}
-        </div>
+        >
+          <CardContent className="px-4 py-3">
+            <p className="text-sm whitespace-pre-wrap leading-relaxed">
+              {message.content}
+            </p>
+            {message.timestamp && (
+              <p
+                className={cn(
+                  'text-xs mt-2',
+                  isUser
+                    ? 'text-blue-100'
+                    : 'text-muted-foreground'
+                )}
+              >
+                {new Date(message.timestamp).toLocaleTimeString()}
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -233,7 +242,7 @@ export function ChatAssistant({
   return (
     <div className={`w-full max-w-4xl mx-auto h-full flex flex-col ${className}`}>
       {/* Header */}
-      <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="mb-4 pb-4 border-b">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-600 rounded-lg">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,10 +255,10 @@ export function ChatAssistant({
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold">
               AI Assistant
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {sessionInfo ? `Mode: ${sessionInfo.mode}` : 'Initializing...'}
             </p>
           </div>
@@ -259,7 +268,7 @@ export function ChatAssistant({
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto mb-4 pr-2 space-y-2">
         {messages.length === 0 && !isLoading && (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-12 text-muted-foreground">
             <svg
               className="w-16 h-16 mx-auto mb-4 opacity-50"
               fill="none"
@@ -294,9 +303,11 @@ export function ChatAssistant({
                   />
                 </svg>
               </div>
-              <div className="px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-800">
-                <InlineLoader message="Thinking..." />
-              </div>
+              <Card className="py-0 bg-muted">
+                <CardContent className="px-4 py-3">
+                  <InlineLoader message="Thinking..." />
+                </CardContent>
+              </Card>
             </div>
           </div>
         )}
@@ -306,13 +317,15 @@ export function ChatAssistant({
 
       {/* Error Display */}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-        </div>
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription className="text-sm">
+            {error}
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+      <div className="border-t pt-4">
         <div className="flex gap-2">
           <textarea
             ref={inputRef}
@@ -322,12 +335,13 @@ export function ChatAssistant({
             placeholder="Ask a question about the analysis..."
             disabled={isLoading || !isChatStarted}
             rows={3}
-            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-background text-foreground placeholder-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
           />
-          <button
+          <Button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading || !isChatStarted}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed self-end"
+            className="self-end bg-blue-600 hover:bg-blue-700"
+            size="icon-lg"
           >
             {isLoading ? (
               <InlineLoader />
@@ -346,9 +360,9 @@ export function ChatAssistant({
                 />
               </svg>
             )}
-          </button>
+          </Button>
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           Press Enter to send, Shift+Enter for new line
         </p>
       </div>

@@ -7,7 +7,7 @@ export interface ThemeToggleProps {
   className?: string;
 }
 
-export function ThemeToggle({ className = '' }: ThemeToggleProps) {
+export default function ThemeToggle({ className = '' }: ThemeToggleProps) {
   const { state, setTheme } = useApp();
   const [isAnimating, setIsAnimating] = useState(false);
 
